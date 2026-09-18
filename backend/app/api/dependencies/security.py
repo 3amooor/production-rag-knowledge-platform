@@ -18,7 +18,9 @@ def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> User:
-    unauthorized = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials.")
+    unauthorized = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials."
+    )
     if credentials is None:
         raise unauthorized
     try:
@@ -36,7 +38,13 @@ def require_workspace_member(
     current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_db_session)],
 ) -> WorkspaceMember:
-    membership = session.scalar(select(WorkspaceMember).where(WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.user_id == current_user.id))
+    membership = session.scalar(
+        select(WorkspaceMember).where(
+            WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.user_id == current_user.id
+        )
+    )
     if membership is None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Workspace access is forbidden.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Workspace access is forbidden."
+        )
     return membership

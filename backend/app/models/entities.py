@@ -19,7 +19,8 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -106,9 +107,13 @@ class Document(TimestampedModel):
     filename: Mapped[str] = mapped_column(String(512), nullable=False)
     content_type: Mapped[str] = mapped_column(String(255), nullable=False)
     size_bytes: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    status: Mapped[str] = mapped_column(String(16), nullable=False, server_default=text("'UPLOADED'"))
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'UPLOADED'")
+    )
     failure_reason: Mapped[str | None] = mapped_column(Text)
-    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    metadata_: Mapped[dict] = mapped_column(
+        "metadata", JSONB, nullable=False, server_default=text("'{}'::jsonb")
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
     )
@@ -152,7 +157,9 @@ class Chunk(TimestampedModel):
         PG_UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
     )
     document_version_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("document_versions.id", ondelete="CASCADE"), nullable=False
+        PG_UUID(as_uuid=True),
+        ForeignKey("document_versions.id", ondelete="CASCADE"),
+        nullable=False,
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIMENSIONS), nullable=False)
@@ -160,7 +167,9 @@ class Chunk(TimestampedModel):
     page_number: Mapped[int | None] = mapped_column(Integer)
     chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
     token_count: Mapped[int] = mapped_column(Integer, nullable=False)
-    metadata_: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    metadata_: Mapped[dict] = mapped_column(
+        "metadata", JSONB, nullable=False, server_default=text("'{}'::jsonb")
+    )
 
 
 class Conversation(TimestampedModel):
@@ -189,8 +198,12 @@ class Message(TimestampedModel):
     )
     role: Mapped[str] = mapped_column(String(16), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    status: Mapped[str] = mapped_column(String(16), nullable=False, server_default=text("'COMPLETE'"))
-    citations: Mapped[list] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default=text("'COMPLETE'")
+    )
+    citations: Mapped[list] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'::jsonb")
+    )
 
 
 class RetrievalLog(TimestampedModel):
@@ -207,14 +220,19 @@ class RetrievalLog(TimestampedModel):
     query_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     retrieved_chunks: Mapped[list] = mapped_column(JSONB, nullable=False)
     latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
-    configuration: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
+    configuration: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, server_default=text("'{}'::jsonb")
+    )
 
 
 class GenerationLog(TimestampedModel):
     __tablename__ = "generation_logs"
 
     message_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("messages.id", ondelete="CASCADE"), unique=True, nullable=False
+        PG_UUID(as_uuid=True),
+        ForeignKey("messages.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=False,
     )
     model: Mapped[str] = mapped_column(String(128), nullable=False)
     input_tokens: Mapped[int | None] = mapped_column(Integer)
@@ -226,7 +244,9 @@ class GenerationLog(TimestampedModel):
 
 class EvaluationDataset(TimestampedModel):
     __tablename__ = "evaluation_datasets"
-    __table_args__ = (UniqueConstraint("workspace_id", "name", "version", name="uq_evaluation_dataset"),)
+    __table_args__ = (
+        UniqueConstraint("workspace_id", "name", "version", name="uq_evaluation_dataset"),
+    )
 
     workspace_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False
@@ -240,11 +260,15 @@ class EvaluationQuestion(TimestampedModel):
     __tablename__ = "evaluation_questions"
 
     dataset_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("evaluation_datasets.id", ondelete="CASCADE"), nullable=False
+        PG_UUID(as_uuid=True),
+        ForeignKey("evaluation_datasets.id", ondelete="CASCADE"),
+        nullable=False,
     )
     question: Mapped[str] = mapped_column(Text, nullable=False)
     expected_answer: Mapped[str | None] = mapped_column(Text)
-    relevant_chunk_ids: Mapped[list] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    relevant_chunk_ids: Mapped[list] = mapped_column(
+        JSONB, nullable=False, server_default=text("'[]'::jsonb")
+    )
     tags: Mapped[list] = mapped_column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
 
 
@@ -253,7 +277,9 @@ class EvaluationRun(TimestampedModel):
     __table_args__ = (Index("ix_evaluation_runs_dataset_created", "dataset_id", "created_at"),)
 
     dataset_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("evaluation_datasets.id", ondelete="RESTRICT"), nullable=False
+        PG_UUID(as_uuid=True),
+        ForeignKey("evaluation_datasets.id", ondelete="RESTRICT"),
+        nullable=False,
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False)
     configuration: Mapped[dict] = mapped_column(JSONB, nullable=False)
@@ -265,7 +291,9 @@ class ProcessingJob(TimestampedModel):
     __tablename__ = "processing_jobs"
     __table_args__ = (
         UniqueConstraint("document_version_id", name="uq_processing_job_document_version"),
-        CheckConstraint("status IN ('QUEUED', 'PROCESSING', 'COMPLETE', 'FAILED')", name="ck_job_status"),
+        CheckConstraint(
+            "status IN ('QUEUED', 'PROCESSING', 'COMPLETE', 'FAILED')", name="ck_job_status"
+        ),
         Index("ix_processing_jobs_status_created", "status", "created_at"),
     )
 
@@ -276,7 +304,9 @@ class ProcessingJob(TimestampedModel):
         PG_UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
     )
     document_version_id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("document_versions.id", ondelete="CASCADE"), nullable=False
+        PG_UUID(as_uuid=True),
+        ForeignKey("document_versions.id", ondelete="CASCADE"),
+        nullable=False,
     )
     status: Mapped[str] = mapped_column(String(16), nullable=False, server_default=text("'QUEUED'"))
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))

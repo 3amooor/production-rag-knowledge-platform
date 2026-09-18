@@ -27,4 +27,8 @@ def test_chunks_define_tenant_and_retrieval_indexes() -> None:
     chunks = Base.metadata.tables["chunks"]
     index_names = {index.name for index in chunks.indexes}
 
-    assert {"ix_chunks_workspace_document", "ix_chunks_embedding_hnsw", "ix_chunks_search_vector"} <= index_names
+    assert {
+        "ix_chunks_workspace_document",
+        "ix_chunks_embedding_hnsw",
+        "ix_chunks_search_vector",
+    } <= index_names

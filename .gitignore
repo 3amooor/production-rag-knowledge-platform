@@ -20,6 +20,7 @@ frontend/dist/
 *.tsbuildinfo
 
 # Tooling and operating system files
+.playwright-cli/
 .idea/
 .vscode/
 .DS_Store

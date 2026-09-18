@@ -16,10 +16,14 @@ def error_payload(request: Request, code: str, message: str, details: Any = None
     }
 
 
-async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """Return malformed client input in the platform's error envelope."""
 
     return JSONResponse(
         status_code=422,
-        content=error_payload(request, "VALIDATION_ERROR", "Request validation failed.", exc.errors()),
+        content=error_payload(
+            request, "VALIDATION_ERROR", "Request validation failed.", exc.errors()
+        ),
     )

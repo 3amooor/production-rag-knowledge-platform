@@ -10,6 +10,11 @@ WHERE workspace_id = :authorized_workspace_id
 
 The application must apply that predicate inside every dense and lexical query. It must not retrieve globally and filter results in Python.
 
+The implemented hybrid retriever enforces this predicate independently for both its
+vector and PostgreSQL full-text candidate queries, then combines the resulting ranks
+with reciprocal-rank fusion. This keeps an accidental cross-tenant candidate from
+being possible at the query boundary.
+
 ## Retrieval storage
 
 `chunks` carries document/version provenance, text, page number, token count, JSON metadata, a `vector(1536)` embedding, and a PostgreSQL `tsvector` lexical index.

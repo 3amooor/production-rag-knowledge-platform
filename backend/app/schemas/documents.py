@@ -1,0 +1,19 @@
+"""Document intake and processing-state API contracts."""
+
+from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+
+
+class DocumentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    filename: str
+    content_type: str
+    size_bytes: int
+    status: str
+    failure_reason: str | None
+    created_at: datetime
+    updated_at: datetime

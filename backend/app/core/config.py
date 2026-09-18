@@ -20,16 +20,24 @@ class Settings(BaseSettings):
     )
     redis_url: str = "redis://redis:6379/0"
     embedding_dimensions: int = Field(default=1536, ge=1)
-    cors_origins: list[str] = ["http://localhost:5173"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     jwt_secret_key: str = "replace-with-a-long-random-secret"
     jwt_access_token_minutes: int = Field(default=15, ge=1, le=60)
     jwt_refresh_token_days: int = Field(default=30, ge=1, le=90)
+    object_storage_endpoint: str = "http://minio:9000"
+    object_storage_bucket: str = "rag-documents"
+    minio_root_user: str = "minioadmin"
+    minio_root_password: str = "change-me-minio-password"
+    max_upload_bytes: int = Field(default=25 * 1024 * 1024, ge=1)
 
     @model_validator(mode="after")
     def prevent_placeholder_production_secret(self) -> "Settings":
         """Reject the documented placeholder secret in production environments."""
 
-        if self.app_env == "production" and self.jwt_secret_key == "replace-with-a-long-random-secret":
+        if (
+            self.app_env == "production"
+            and self.jwt_secret_key == "replace-with-a-long-random-secret"
+        ):
             raise ValueError("JWT_SECRET_KEY must be changed for production.")
         return self
 

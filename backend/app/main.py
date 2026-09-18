@@ -11,7 +11,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.errors import validation_exception_handler
 from app.api.routes.auth import router as auth_router
+from app.api.routes.conversations import router as conversations_router
+from app.api.routes.documents import router as documents_router
 from app.api.routes.health import router as health_router
+from app.api.routes.workspaces import router as workspaces_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, request_id_context
 from app.core.readiness import dependency_status
@@ -56,6 +59,9 @@ def create_app(dependency_checker: Callable[[], dict[str, bool]] = dependency_st
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
     app.include_router(health_router)
     app.include_router(auth_router, prefix=settings.api_v1_prefix)
+    app.include_router(workspaces_router, prefix=settings.api_v1_prefix)
+    app.include_router(documents_router, prefix=settings.api_v1_prefix)
+    app.include_router(conversations_router, prefix=settings.api_v1_prefix)
     logger.info("application_created", extra={"environment": settings.app_env})
     return app
 

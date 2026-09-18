@@ -1,0 +1,35 @@
+name: rag-knowledge-platform
+
+# Deployment template for a managed PostgreSQL/Redis/S3 environment. Supply all
+# required values via a secret manager or the deployment platform; do not use it
+# with development defaults from .env.example.
+services:
+  api:
+    build:
+      context: ./backend
+      target: production
+    env_file: .env
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build:
+      context: ./backend
+      target: production
+    env_file: .env
+    command: celery -A app.workers.celery_app worker --loglevel=INFO
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy

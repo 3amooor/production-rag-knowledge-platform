@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Create the initial multi-tenant RAG platform schema.
 
 Revision ID: 20260918_0001
